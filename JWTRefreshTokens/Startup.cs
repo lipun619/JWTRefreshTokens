@@ -38,7 +38,6 @@ namespace JWTRefreshTokens
                     Description = "Sample service for Learner",
                 });
             });
-
             services.AddDbContext<ApplicationDBContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("AppDbContext")));
         }
