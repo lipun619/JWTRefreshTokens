@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 namespace JWTRefreshTokens
@@ -84,6 +85,15 @@ namespace JWTRefreshTokens
             }).AddJwtBearer(jwtOptions =>
             {
                 jwtOptions.TokenValidationParameters = tokenValidation;
+                jwtOptions.Events = new JwtBearerEvents();
+                jwtOptions.Events.OnTokenValidated = async (context) =>
+                {
+                    var ipAddress = context.Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                    var jwtService = context.Request.HttpContext.RequestServices.GetService<IJwtService>();
+                    var jwtToken = context.SecurityToken as JwtSecurityToken;
+                    if (!await jwtService.IsTokenValid(jwtToken.RawData, ipAddress))
+                        context.Fail("Invalid Token Details");
+                };
             });
 
             services.AddTransient<IJwtService, JwtService>();
